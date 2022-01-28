@@ -36,7 +36,13 @@ func (v *variable) dump(val reflect.Value, name string) {
 			//l := val.Len()
 			keys := val.MapKeys()
 			for _, k := range keys {
-				v.dump(val.MapIndex(k), k.Interface().(string))
+				keyStr, err := v.toString(k.Interface())
+				if err == nil {
+					v.dump(val.MapIndex(k), keyStr)
+				} else {
+					v.dump(k, "key:")
+					v.dump(val.MapIndex(k), "value:")
+				}
 			}
 		case reflect.Ptr:
 			v.printType(name, val.Interface())
@@ -55,6 +61,44 @@ func (v *variable) dump(val reflect.Value, name string) {
 	}
 
 	v.indent--
+}
+
+func (v *variable) toString(value interface{}) (string, error) {
+	switch value.(type) {
+	case string:
+		if value, ok := value.(string); ok {
+			return value, nil
+		}
+	case bool:
+		if value, ok := value.(bool); ok {
+			return strconv.FormatBool(value), nil
+		}
+	case uint8:
+		if value, ok := value.(uint8); ok {
+			return strconv.Itoa(int(value)), nil
+		}
+	case int:
+		if value, ok := value.(int); ok {
+			return strconv.Itoa(value), nil
+		}
+	case int32:
+		if value, ok := value.(int32); ok {
+			return strconv.Itoa(int(value)), nil
+		}
+	case int64:
+		if value, ok := value.(int64); ok {
+			return strconv.FormatInt(value, 10), nil
+		}
+	case float32:
+		if value, ok := value.(float32); ok {
+			return strconv.FormatFloat(float64(value), 'f', 10, 64), nil
+		}
+	case float64:
+		if value, ok := value.(float64); ok {
+			return strconv.FormatFloat(value, 'f', 10, 64), nil
+		}
+	}
+	return "", fmt.Errorf("value type unknown")
 }
 
 func (v *variable) printType(name string, vv interface{}) {
