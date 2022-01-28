@@ -38,3 +38,11 @@ Then Print:
   A(int64) 1
   B(int64) 2
 ```
+
+Optimize print map:
+Can print the case where the key isn't string.
+```example:
+a := map[int]string {...}
+b := map[xxxStruct]string {...}
+godump.Dump(a, b)
+```
